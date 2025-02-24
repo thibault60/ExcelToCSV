@@ -5,13 +5,13 @@ import os
 # 📌 Titre de l'application
 st.title("📂 Convertisseur Excel ➡️ CSV")
 
-# 📝 Description
+# 📝 Instructions
 st.markdown("""
 **Instructions :**  
 1️⃣ **Téléversez un fichier Excel (.xlsx)**  
 2️⃣ **Sélectionnez la feuille contenant les données**  
 3️⃣ **Cliquez sur "Convertir en CSV"**  
-4️⃣ **Téléchargez le fichier CSV généré** 🎯
+4️⃣ **Téléchargez le fichier CSV généré** 🎯  
 """)
 
 # 🔹 Widget pour uploader un fichier
@@ -42,14 +42,18 @@ if fichier_excel:
                 # 🔹 Convertir en une chaîne séparée par "|"
                 mots_cles_str = "|".join(mots_cles)
 
-                # 🔹 Créer le DataFrame final avec les 3 colonnes
-                final_df = pd.DataFrame([[url, mot_cle_principal, mots_cles_str]],
-                                        columns=["URL", "Mot Clé Principal", "Keywords"])
+                # 🔹 Création du DataFrame avec 3 colonnes
+                final_df = pd.DataFrame({
+                    "URL": [url],
+                    "Mot Clé Principal": [mot_cle_principal],
+                    "Keywords": [mots_cles_str]
+                })
 
-                # 🔹 Affichage dans Streamlit
+                # 🔹 Affichage du tableau en 3 colonnes dans Streamlit
+                st.write("📊 **Aperçu des données extraites** :")
                 st.dataframe(final_df)
 
-                # 🔹 Enregistrer en CSV
+                # 🔹 Enregistrement en CSV
                 csv_path = "export.csv"
                 final_df.to_csv(csv_path, index=False, sep=",", encoding="utf-8-sig")
 
