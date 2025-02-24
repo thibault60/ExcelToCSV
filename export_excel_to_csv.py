@@ -9,8 +9,9 @@ st.title("📂 Convertisseur Excel ➡️ CSV")
 st.markdown("""
 **Instructions :**  
 1️⃣ **Téléversez un fichier Excel (.xlsx)**  
-2️⃣ **Cliquez sur "Convertir en CSV"**  
-3️⃣ **Téléchargez le fichier CSV généré** 🎯
+2️⃣ **Sélectionnez la feuille contenant les données**  
+3️⃣ **Cliquez sur "Convertir en CSV"**  
+4️⃣ **Téléchargez le fichier CSV généré** 🎯
 """)
 
 # 🔹 Widget pour uploader un fichier
@@ -18,7 +19,7 @@ fichier_excel = st.file_uploader("📂 Téléchargez votre fichier Excel", type=
 
 if fichier_excel:
     try:
-        # 🔹 Lire le fichier Excel
+        # 🔹 Charger le fichier Excel
         xls = pd.ExcelFile(fichier_excel, engine="openpyxl")
         st.success("✅ Fichier chargé avec succès !")
 
@@ -32,7 +33,7 @@ if fichier_excel:
             # Vérifier que le fichier contient assez de lignes
             if df.shape[0] > 6:
                 url = df.iloc[2, 0]  # 🔹 URL en A3
-                mots_cles_principal = df.iloc[3, 0] if df.shape[0] > 3 else "N/A"  # 🔹 Mot clé principal en A4
+                mot_cle_principal = f"{df.iloc[4, 0]} {df.iloc[4, 1]}".strip()  # 🔹 Concaténation A5 et B5
                 mots_cles = df.iloc[6:, 0].dropna().tolist()  # 🔹 Mots-clés à partir de A7
 
                 # 🔹 Supprimer les lignes contenant "Mots-clés"
@@ -42,7 +43,7 @@ if fichier_excel:
                 mots_cles_str = "|".join(mots_cles)
 
                 # 🔹 Créer le DataFrame final avec les 3 colonnes
-                final_df = pd.DataFrame([[url, mots_cles_principal, mots_cles_str]],
+                final_df = pd.DataFrame([[url, mot_cle_principal, mots_cles_str]],
                                         columns=["URL", "Mot Clé Principal", "Keywords"])
 
                 # 🔹 Affichage dans Streamlit
