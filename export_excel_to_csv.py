@@ -1,51 +1,58 @@
-import os
+import streamlit as st
 import pandas as pd
+import os
 
-# 📂 Vérifier le dossier de travail
-print("📂 Dossier de travail actuel :", os.getcwd())
+# 📌 Titre de l'application
+st.title("📂 Convertisseur Excel ➡️ CSV")
 
-# 🔹 Chemin du fichier Excel (corrigé)
-fichier_excel = "/workspaces/ExcelToCSV/ExcelToCSV/occurence-Bilan-2025.xlsx"
-fichier_csv = "/workspaces/ExcelToCSV/ExcelToCSV/export.csv"
+# 📝 Description
+st.markdown("""
+**Instructions :**  
+1️⃣ **Téléversez un fichier Excel (.xlsx)**  
+2️⃣ **Cliquez sur "Convertir en CSV"**  
+3️⃣ **Téléchargez le fichier CSV généré** 🎯
+""")
 
-# 🔹 Vérifier si le fichier existe
-if not os.path.exists(fichier_excel):
-    print(f"❌ ERREUR : Le fichier '{fichier_excel}' est introuvable.")
-    print("📂 Vérifiez que le fichier est bien placé dans le bon dossier.")
-    exit(1)
+# 🔹 Widget pour uploader un fichier
+fichier_excel = st.file_uploader("📂 Téléchargez votre fichier Excel", type=["xlsx"])
 
-try:
-    # 🔹 Charger le fichier Excel
-    xls = pd.ExcelFile(fichier_excel, engine="openpyxl")
-except Exception as e:
-    print(f"❌ ERREUR : Impossible de lire le fichier Excel.\nDétail de l'erreur : {e}")
-    exit(1)
+if fichier_excel:
+    # 🔹 Lire le fichier Excel
+    try:
+        xls = pd.ExcelFile(fichier_excel, engine="openpyxl")
+        st.success("✅ Fichier chargé avec succès !")
 
-# 🔹 Liste pour stocker les données extraites
-donnees = []
+        # 🔹 Sélection de la feuille (si plusieurs feuilles)
+        sheet_name = st.selectbox("📑 Sélectionnez une feuille :", xls.sheet_names)
 
-# 🔹 Boucle sur chaque feuille du fichier Excel
-for sheet_name in xls.sheet_names:
-    df = pd.read_excel(xls, sheet_name=sheet_name, header=None, engine="openpyxl")
+        if st.button("🚀 Convertir en CSV"):
+            # 🔹 Lire la feuille sélectionnée
+            df = pd.read_excel(xls, sheet_name=sheet_name, header=None, engine="openpyxl")
 
-    # Vérifier que le fichier contient assez de lignes
-    if df.shape[0] > 6:
-        url = df.iloc[2, 0]  # 🔹 URL en A3
-        mots_cles = df.iloc[6:, 0].dropna().tolist()  # 🔹 Mots-clés à partir de A7
+            # 🔹 Vérifier que le fichier contient assez de lignes
+            if df.shape[0] > 6:
+                url = df.iloc[2, 0]  # 🔹 URL en A3
+                mots_cles = df.iloc[6:, 0].dropna().tolist()  # 🔹 Mots-clés à partir de A7
 
-        # 🔹 Supprimer les lignes contenant "Mots-clés"
-        mots_cles = [mot for mot in mots_cles if mot.lower().strip() != "mots-clés"]
+                # 🔹 Supprimer les lignes contenant "Mots-clés"
+                mots_cles = [mot for mot in mots_cles if mot.lower().strip() != "mots-clés"]
 
-        # 🔹 Convertir en une chaîne séparée par "|"
-        mots_cles_str = "|".join(mots_cles)
+                # 🔹 Convertir en une chaîne séparée par "|"
+                mots_cles_str = "|".join(mots_cles)
 
-        # 🔹 Ajouter à la liste
-        donnees.append([url, mots_cles_str])
+                # 🔹 Créer le DataFrame final
+                final_df = pd.DataFrame([[url, mots_cles_str]], columns=["URL", "Keywords"])
 
-# 🔹 Vérifier s'il y a des données avant d'exporter
-if donnees:
-    final_df = pd.DataFrame(donnees, columns=["URL", "Keywords"])
-    final_df.to_csv(fichier_csv, index=False, sep=",", encoding="utf-8-sig")
-    print(f"✅ Export terminé : {os.path.abspath(fichier_csv)}")
-else:
-    print("⚠️ Aucune donnée valide trouvée. Le fichier CSV n'a pas été généré.")
+                # 🔹 Enregistrer en CSV
+                csv_path = "export.csv"
+                final_df.to_csv(csv_path, index=False, sep=",", encoding="utf-8-sig")
+
+                # 🔹 Télécharger le fichier CSV
+                with open(csv_path, "rb") as file:
+                    st.download_button("📥 Télécharger le CSV", file, "export.csv", "text/csv")
+                    st.success("✅ Conversion terminée, cliquez pour télécharger le CSV !")
+            else:
+                st.warning("⚠️ Le fichier ne contient pas assez de lignes pour être traité.")
+
+    except Exception as e:
+        st.error(f"❌ Erreur lors de la lecture du fichier : {e}")
