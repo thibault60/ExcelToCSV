@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # 📌 Titre de l'application
-st.title("📂 Convertisseur Excel ➡️ CSV")
+st.title("📂 Convertisseur Excel ➡️ CSV avec Fréquence Conseillée")
 
 # 📝 Instructions
 st.markdown("""
@@ -35,21 +35,24 @@ if fichier_excel:
                 url = df.iloc[2, 0]  # 🔹 URL en A3
                 mot_cle_principal = f"{df.iloc[4, 0]} {df.iloc[4, 1]}".strip()  # 🔹 Concaténation A5 et B5
                 mots_cles = df.iloc[6:, 0].dropna().tolist()  # 🔹 Mots-clés à partir de A7
+                frequence_conseillee = df.iloc[6:, 1].dropna().tolist()  # 🔹 Fréquence conseillée en B7 et après
 
                 # 🔹 Supprimer les lignes contenant "Mots-clés"
                 mots_cles = [mot for mot in mots_cles if mot.lower().strip() != "mots-clés"]
 
                 # 🔹 Convertir en une chaîne séparée par "|"
                 mots_cles_str = "|".join(mots_cles)
-
-                # 🔹 Création du DataFrame avec 3 colonnes
+                frequence_conseillee_str = "|".join(map(str, frequence_conseillee))  # Convertir en chaîne
+                
+                # 🔹 Création du DataFrame avec 4 colonnes
                 final_df = pd.DataFrame({
                     "URL": [url],
                     "Mot Clé Principal": [mot_cle_principal],
-                    "Keywords": [mots_cles_str]
+                    "Keywords": [mots_cles_str],
+                    "Fréquence conseillée": [frequence_conseillee_str]
                 })
 
-                # 🔹 Affichage du tableau en 3 colonnes dans Streamlit
+                # 🔹 Affichage du tableau en 4 colonnes dans Streamlit
                 st.write("📊 **Aperçu des données extraites** :")
                 st.dataframe(final_df)
 
