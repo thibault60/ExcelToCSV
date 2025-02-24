@@ -17,8 +17,8 @@ st.markdown("""
 fichier_excel = st.file_uploader("📂 Téléchargez votre fichier Excel", type=["xlsx"])
 
 if fichier_excel:
-    # 🔹 Lire le fichier Excel
     try:
+        # 🔹 Lire le fichier Excel
         xls = pd.ExcelFile(fichier_excel, engine="openpyxl")
         st.success("✅ Fichier chargé avec succès !")
 
@@ -29,9 +29,10 @@ if fichier_excel:
             # 🔹 Lire la feuille sélectionnée
             df = pd.read_excel(xls, sheet_name=sheet_name, header=None, engine="openpyxl")
 
-            # 🔹 Vérifier que le fichier contient assez de lignes
+            # Vérifier que le fichier contient assez de lignes
             if df.shape[0] > 6:
                 url = df.iloc[2, 0]  # 🔹 URL en A3
+                mots_cles_principal = df.iloc[3, 0] if df.shape[0] > 3 else "N/A"  # 🔹 Mot clé principal en A4
                 mots_cles = df.iloc[6:, 0].dropna().tolist()  # 🔹 Mots-clés à partir de A7
 
                 # 🔹 Supprimer les lignes contenant "Mots-clés"
@@ -40,8 +41,12 @@ if fichier_excel:
                 # 🔹 Convertir en une chaîne séparée par "|"
                 mots_cles_str = "|".join(mots_cles)
 
-                # 🔹 Créer le DataFrame final
-                final_df = pd.DataFrame([[url, mots_cles_str]], columns=["URL", "Keywords"])
+                # 🔹 Créer le DataFrame final avec les 3 colonnes
+                final_df = pd.DataFrame([[url, mots_cles_principal, mots_cles_str]],
+                                        columns=["URL", "Mot Clé Principal", "Keywords"])
+
+                # 🔹 Affichage dans Streamlit
+                st.dataframe(final_df)
 
                 # 🔹 Enregistrer en CSV
                 csv_path = "export.csv"
